@@ -54,7 +54,10 @@ pip install -r requirements.txt
 touch .env
 ```
 
-If `python3.12` is not installed, install Python 3.12 or newer and use
+> [!NOTE]
+> On macOS, `python3` often points to Apple's built-in Python 3.9 (`/usr/bin/python3`). If you installed Python using Homebrew (`brew install python@3.12`), you must run `python3.12` explicitly instead of `python3` to create the virtual environment. Once `.venv` is activated, running `python` or `python3` will automatically use Python 3.12.
+
+If `python3.12` is not installed, install Python 3.12 or newer (`brew install python@3.12` on macOS) and use
 that version's command to create the virtual environment. Do not reuse a
 virtual environment created with Python 3.9; remove or rename that
 environment and recreate it with the newer interpreter.
