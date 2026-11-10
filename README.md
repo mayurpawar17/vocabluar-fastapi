@@ -42,10 +42,61 @@ the app user. Grant the service account only the access it needs.
 
 ## 2. Create and configure the Python environment
 
-Open a terminal at the repository root, then:
+Open a terminal at the repository root (or the `backend/` directory if this is part of a larger project):
+
+### Windows (PowerShell - Recommended)
+
+```powershell
+# 1. Verify Python 3.11+ is installed (3.12 recommended)
+python --version
+# Or if using the Windows Python Launcher: py -3.12 --version
+
+# 2. Create the virtual environment
+python -m venv .venv
+# Or: py -3.12 -m venv .venv
+
+# 3. Activate the virtual environment
+.\.venv\Scripts\Activate.ps1
+
+# 4. Upgrade pip and install dependencies
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+
+# 5. Create .env file
+New-Item -Path .env -ItemType File -Force
+```
+
+> [!TIP]
+> **PowerShell Script Execution Error:**
+> If activating `.venv` gives an error like `cannot be loaded because running scripts is disabled on this system`, run this command in your PowerShell window:
+> ```powershell
+> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+> ```
+> and then run `.\.venv\Scripts\Activate.ps1` again.
+
+### Windows (Command Prompt / CMD)
+
+```cmd
+:: 1. Check Python version
+python --version
+
+:: 2. Create virtual environment
+python -m venv .venv
+
+:: 3. Activate virtual environment
+.venv\Scripts\activate.bat
+
+:: 4. Upgrade pip and install dependencies
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+
+:: 5. Create .env file
+type nul > .env
+```
+
+### macOS / Linux
 
 ```sh
-cd backend
 python3.12 --version
 python3.12 -m venv .venv
 source .venv/bin/activate
@@ -57,12 +108,9 @@ touch .env
 > [!NOTE]
 > On macOS, `python3` often points to Apple's built-in Python 3.9 (`/usr/bin/python3`). If you installed Python using Homebrew (`brew install python@3.12`), you must run `python3.12` explicitly instead of `python3` to create the virtual environment. Once `.venv` is activated, running `python` or `python3` will automatically use Python 3.12.
 
-If `python3.12` is not installed, install Python 3.12 or newer (`brew install python@3.12` on macOS) and use
-that version's command to create the virtual environment. Do not reuse a
-virtual environment created with Python 3.9; remove or rename that
-environment and recreate it with the newer interpreter.
+If Python 3.11+ is not installed, install Python 3.12 or newer (from [python.org](https://www.python.org/) or Microsoft Store on Windows, or `brew install python@3.12` on macOS) and use that version's command to create the virtual environment. Do not reuse a virtual environment created with Python 3.9; remove or rename that environment and recreate it with the newer interpreter.
 
-Edit `backend/.env` and add your local values:
+Edit `.env` (or `backend/.env`) and add your local values:
 
 ```dotenv
 FIREBASE_PROJECT_ID=your-firebase-project-id
@@ -78,22 +126,40 @@ local configuration. Keep the Firebase service-account JSON
 outside the repository and point the Firebase Admin SDK to its full path
 in the same terminal:
 
+#### Windows (PowerShell)
+```powershell
+$env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\your-service-account.json"
+# Example:
+# $env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\YourUsername\Downloads\your-service-account.json"
+```
+
+#### Windows (Command Prompt / CMD)
+```cmd
+set GOOGLE_APPLICATION_CREDENTIALS=C:\path\to\your-service-account.json
+```
+
+#### macOS / Linux
 ```sh
 export GOOGLE_APPLICATION_CREDENTIALS="/absolute/path/to/your-service-account.json"
 ```
 
-`GOOGLE_APPLICATION_CREDENTIALS` must point to the JSON file itself, not
-just the directory containing it. These credentials are for local
-development only.
+> [!IMPORTANT]
+> `GOOGLE_APPLICATION_CREDENTIALS` must point to the JSON file itself, not
+> just the directory containing it. On Windows, wrap the path in double quotes if it contains spaces. These credentials are for local
+> development only.
 
 ## 3. Start and check FastAPI
 
-From the `backend/` directory, with `.venv` active and the credentials
-environment variable set:
+From the repository root (with `.venv` active and the credentials
+environment variable set):
 
 ```sh
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
 ```
+
+> [!NOTE]
+> **Windows Firewall Alert:**
+> When running Uvicorn for the first time, Windows Defender Firewall might prompt you to allow Python to communicate on networks. Select **Allow access** (Private networks) so emulator or mobile devices can reach port 8080.
 
 Keep this terminal open while using the app. Verify that the server is
 running by opening:
@@ -127,11 +193,20 @@ This is also the Flutter app's default API URL.
 flutter run --dart-define=CONVERSATION_API_BASE_URL=http://localhost:8080
 ```
 
+### Windows desktop app (Flutter)
+
+```sh
+flutter run -d windows --dart-define=CONVERSATION_API_BASE_URL=http://localhost:8080
+```
+
 ### Physical Android or iOS device
 
 Use your computer's private LAN IP address, not `localhost`. The phone
 and computer must be on the same network, and the computer firewall must
 allow inbound connections on port `8080`.
+
+- **On Windows:** Find your IPv4 address by running `ipconfig` in PowerShell/CMD (look for `IPv4 Address` under your active Wi-Fi or Ethernet adapter, e.g. `192.168.1.50`).
+- **On macOS / Linux:** Find your IP by running `ipconfig getifaddr en0` or `hostname -I`.
 
 ```sh
 flutter run --dart-define=CONVERSATION_API_BASE_URL=http://YOUR_COMPUTER_LAN_IP:8080
@@ -175,6 +250,13 @@ The supported topics are `daily_life`, `work`, `travel`, `shopping`,
 
 ## Troubleshooting
 
+- **PowerShell script execution error (`PSSecurityException` / `UnauthorizedAccess`):**
+  If running `.\.venv\Scripts\Activate.ps1` gives an error that script execution is disabled, open PowerShell and run:
+  `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process`.
+- **Windows path format for Firebase credentials:**
+  Always provide the full path to the `.json` file wrapped in quotes, e.g.:
+  `$env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\username\Downloads\service-account.json"`.
+  Ensure you do not point to just the folder.
 - **Python version warnings or `| None` type errors:** Check
   `python --version` after activating `.venv`. Recreate the environment
   with Python 3.11 or newer if it was made with Python 3.9.
@@ -187,8 +269,8 @@ The supported topics are `daily_life`, `work`, `travel`, `shopping`,
 - **Gemini unavailable / invalid API key:** Check `GEMINI_API_KEY`, model
   availability, and Gemini API quota in the backend terminal and Google
   AI Studio.
-- **Connection refused:** Confirm Uvicorn is running on port `8080` and
-  the Flutter app is using the correct device-specific base URL.
+- **Connection refused / Firewall issue:** Confirm Uvicorn is running on port `8080` and
+  the Flutter app is using the correct device-specific base URL. On Windows, ensure Windows Defender Firewall allows inbound connections for Python on private networks.
 - **Physical device cannot connect:** Use the computer's LAN IP, ensure
   both devices are on the same network, and check firewall settings.
 
