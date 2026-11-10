@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     firebase_project_id: str | None = None
+    google_application_credentials: str | None = None
+    firebase_credentials_path: str | None = None
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-2.5-flash"
     gemini_timeout_seconds: float = 30

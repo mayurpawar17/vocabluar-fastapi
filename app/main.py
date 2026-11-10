@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 import os
 
 import uvicorn
@@ -8,8 +9,21 @@ from fastapi.responses import JSONResponse
 
 from app.api.routes.conversations import router as conversations_router
 from app.core.config import get_settings
+from app.core.firebase import get_firebase_app
 
-app = FastAPI(title="Vocabulary Conversation API", version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # Initialize Firebase on application startup
+    get_firebase_app()
+    yield
+
+
+app = FastAPI(
+    title="Vocabulary Conversation API",
+    version="1.0.0",
+    lifespan=lifespan,
+)
 app.include_router(conversations_router)
 cors_origins = [
     origin.strip()

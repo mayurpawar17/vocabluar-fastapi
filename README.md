@@ -114,6 +114,7 @@ Edit `.env` (or `backend/.env`) and add your local values:
 
 ```dotenv
 FIREBASE_PROJECT_ID=your-firebase-project-id
+GOOGLE_APPLICATION_CREDENTIALS=C:\path\to\your-service-account.json
 GEMINI_API_KEY=your-gemini-api-key
 GEMINI_MODEL=gemini-2.5-flash
 DAILY_MESSAGE_LIMIT=50
@@ -121,21 +122,45 @@ MAX_MESSAGE_LENGTH=500
 CORS_ORIGINS=
 ```
 
-The `.env` file is ignored by Git and is the only settings file used for
-local configuration. Keep the Firebase service-account JSON
-outside the repository and point the Firebase Admin SDK to its full path
-in the same terminal:
+> [!TIP]
+> **Recommended:** You can specify `GOOGLE_APPLICATION_CREDENTIALS` directly in your `.env` file as shown above (or place a `service-account.json` file in the project root—it is already ignored by `.gitignore`). The app will automatically load it.
+>
+> Alternatively, you can set it via terminal environment variables:
+
+> [!NOTE]
+> **PowerShell users:** If setting via terminal, do **not** use `export` on Windows PowerShell (it will produce `export : The term 'export' is not recognized`). Use `$env:VARIABLE_NAME = "value"` instead.
 
 #### Windows (PowerShell)
+
+Set for the current terminal session:
 ```powershell
-$env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\your-service-account.json"
-# Example:
-# $env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\YourUsername\Downloads\your-service-account.json"
+$env:GOOGLE_APPLICATION_CREDENTIALS = "C:\path\to\your-service-account.json"
+# Example (if saved in Downloads):
+# $env:GOOGLE_APPLICATION_CREDENTIALS = "C:\Users\mayur\Downloads\your-firebase-service-account.json"
+```
+
+Verify that the path is set and the file exists:
+```powershell
+# Verify the variable value:
+$env:GOOGLE_APPLICATION_CREDENTIALS
+
+# Verify the file actually exists (should return True):
+Test-Path $env:GOOGLE_APPLICATION_CREDENTIALS
+```
+
+*(Optional)* Set permanently for your Windows user account (so you don't have to re-enter it in new terminals; restart PowerShell afterwards):
+```powershell
+[System.Environment]::SetEnvironmentVariable('GOOGLE_APPLICATION_CREDENTIALS', 'C:\path\to\your-service-account.json', 'User')
 ```
 
 #### Windows (Command Prompt / CMD)
 ```cmd
 set GOOGLE_APPLICATION_CREDENTIALS=C:\path\to\your-service-account.json
+```
+
+#### Windows (Git Bash)
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS="C:/path/to/your-service-account.json"
 ```
 
 #### macOS / Linux
@@ -250,6 +275,12 @@ The supported topics are `daily_life`, `work`, `travel`, `shopping`,
 
 ## Troubleshooting
 
+- **`export : The term 'export' is not recognized` (PowerShell):**
+  `export` is a Unix command that does not work in Windows PowerShell. Use:
+  ```powershell
+  $env:GOOGLE_APPLICATION_CREDENTIALS = "C:\path\to\your-service-account.json"
+  ```
+  Verify it using `Test-Path $env:GOOGLE_APPLICATION_CREDENTIALS`.
 - **PowerShell script execution error (`PSSecurityException` / `UnauthorizedAccess`):**
   If running `.\.venv\Scripts\Activate.ps1` gives an error that script execution is disabled, open PowerShell and run:
   `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process`.
